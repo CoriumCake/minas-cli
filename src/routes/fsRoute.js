@@ -78,10 +78,17 @@ router.post('/upload', async (req, res) => {
 
             if (Object.values(fileHashes).includes(hash)) {
                 await fs.unlink(tempPath);
-                return res.status(409).json({ error: `File ${file.name} is a duplicate of an existing file.` });
+                // Return success anyway for batch queue, but log skipped
+                continue;
             }
 
-            const uploadPath = path.join(safePath, file.name);
+            // Client optionally sends full nested path as query 'path' for folders
+            // or we use standard path
+            const uploadDir = safePath;
+            // Ensure full nested directory path actually exists locally
+            await fs.mkdir(uploadDir, { recursive: true });
+
+            const uploadPath = path.join(uploadDir, file.name);
             await fs.rename(tempPath, uploadPath);
             newHashes[uploadPath] = hash;
         }
