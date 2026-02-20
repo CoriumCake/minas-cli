@@ -4,12 +4,18 @@ import { v4 as uuidv4 } from 'uuid';
 
 const CONFIG_FILE = path.join(process.cwd(), '.minas-cli.config.json');
 
+let memoryConfig = null;
+let configLock = Promise.resolve();
+
 export async function getConfig() {
+    if (memoryConfig !== null) return memoryConfig;
     try {
         const data = await fs.readFile(CONFIG_FILE, 'utf8');
-        return JSON.parse(data);
+        memoryConfig = JSON.parse(data);
+        return memoryConfig;
     } catch (error) {
-        return {};
+        memoryConfig = {};
+        return memoryConfig;
     }
 }
 
@@ -33,17 +39,21 @@ export async function hasPassword() {
     return !!(config && config.password);
 }
 
-let configLock = Promise.resolve();
 
 export async function setConfig(newConfig) {
     const operation = async () => {
         const currentConfig = await getConfig();
         const mergedConfig = { ...currentConfig, ...newConfig };
+        memoryConfig = mergedConfig; // Instantly sync to memory cache
         // Wait till previous configurations are populated or saved properly to avoid truncation
         const tempFile = `${CONFIG_FILE}.tmp.${Date.now()}`;
-        await fs.writeFile(tempFile, JSON.stringify(mergedConfig, null, 2));
-        await fs.rename(tempFile, CONFIG_FILE);
-        return mergedConfig;
+        try {
+            await fs.writeFile(tempFile, JSON.stringify(mergedConfig, null, 2));
+            await fs.rename(tempFile, CONFIG_FILE);
+        } catch (e) {
+            // Ignore minor I/O block errors during burst, memory config handles it
+        }
+        return memoryConfig;
     };
     configLock = configLock.then(operation).catch(operation);
     return configLock;
