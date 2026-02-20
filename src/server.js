@@ -31,7 +31,14 @@ export async function startServer() {
         }
     }));
 
-    // Rate Limiting (OWASP A07)
+    app.use(cors());
+    app.use(express.json());
+    app.use(fileUpload({
+        limits: { fileSize: 10 * 1024 * 1024 * 1024 }, // 10GB limit
+        abortOnLimit: true
+    }));
+
+    // Rate Limiting (OWASP A07) applied ONLY to Auth to prevent blocking bulk uploads
     const authLimiter = rateLimit({
         windowMs: 15 * 60 * 1000,
         max: 20,
@@ -39,13 +46,6 @@ export async function startServer() {
         standardHeaders: true,
         legacyHeaders: false
     });
-
-    app.use(cors());
-    app.use(express.json());
-    app.use(fileUpload({
-        limits: { fileSize: 10 * 1024 * 1024 * 1024 }, // 10GB limit
-        abortOnLimit: true
-    }));
 
     // Protect sensitive routes
     app.use('/api/auth/login', authLimiter);
