@@ -1,8 +1,11 @@
 {
-  "name": "@catcode/minas-cli",
-  "version": "1.0.0",
+  "name": "minas-cli",
+  "version": "1.0.3",
   "description": "Zero-config NAS exposed via public tunnel",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "minas-cli": "bin/minas-cli.js"
   },

@@ -8,6 +8,8 @@
 - **Secure Tunnel**: Automatically uses an SSH tunnel to create a secure public URL.
 - **Instant Access**: Prints a QR Code in the terminal for immediate mobile access.
 - **Protected**: Password-protected access with JWT session management.
+- **Rate Limited**: Built-in login rate-limiting to prevent brute force attacks.
+- **Large File Support**: Safely upload files up to 10GB per request.
 - **Mobile Friendly**: Modern, responsive, glassmorphic web dashboard.
 - **File Management**: Upload, download, create folders, and delete files from anywhere.
 
@@ -16,7 +18,7 @@
 Launch Minas directly without installing using `npx`:
 
 ```bash
-npx @catcode/minas-cli
+npx minas-cli
 ```
 *Note: On your first run, you will be prompted to set up a master password.*
 
@@ -29,12 +31,12 @@ Once started:
 If you want to use it frequently, you can install it globally to your system:
 
 ```bash
-npm install -g @catcode/minas-cli
+npm install -g minas-cli
 ```
 
 ### Setup Master Password
 
-Before starting the server, configure your master password::
+Before starting the server, configure your master password:
 
 ```bash
 minas-cli config password
@@ -50,7 +52,7 @@ minas-cli
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/minas-cli.git
+   git clone https://github.com/CoriumCake/minas-cli.git
    cd minas-cli
    ```
 2. Install dependencies:
@@ -66,6 +68,7 @@ minas-cli
 
 - Your password is never stored in plain text (hashed via `bcrypt`).
 - All file operations are protected by secure JWT authentication.
+- Detailed Content Security Policy (CSP) headers enabled via Helmet.
 - Strict path sanitization limits access to prevent directory traversal attacks.
 - Only the configured storage directory is exposed.
 
