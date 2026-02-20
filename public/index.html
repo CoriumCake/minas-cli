@@ -134,9 +134,16 @@
                                 <i class="ph ph-folder-plus"></i>
                                 <span class="hide-mobile">New Folder</span>
                             </button>
+                            <!-- NEW: Upload Folder -->
+                            <button id="upload-folder-btn" class="btn btn-secondary">
+                                <i class="ph ph-folders"></i>
+                                <span class="hide-mobile">Upload Folder</span>
+                            </button>
+                            <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden">
+                            
                             <button id="upload-btn" class="btn btn-primary">
                                 <i class="ph ph-upload-simple"></i>
-                                <span>Upload</span>
+                                <span>Upload File(s)</span>
                             </button>
                             <input type="file" id="file-input" multiple accept="*/*" class="hidden">
                         </div>

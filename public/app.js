@@ -70,6 +70,8 @@ const breadcrumb = document.getElementById('breadcrumb');
 // Actions
 const uploadBtn = document.getElementById('upload-btn');
 const fileInput = document.getElementById('file-input');
+const uploadFolderBtn = document.getElementById('upload-folder-btn');
+const folderInput = document.getElementById('folder-input');
 const newFolderBtn = document.getElementById('new-folder-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const toast = document.getElementById('toast');
@@ -572,48 +574,118 @@ fileInput.onchange = () => {
     fileInput.value = '';
 };
 
-function performUpload(files) {
-    const formData = new FormData();
-    for (const file of files) formData.append('files', file);
+uploadFolderBtn.onclick = () => folderInput.click();
+folderInput.onchange = () => {
+    if (folderInput.files.length === 0) return;
+    performUpload(folderInput.files);
+    folderInput.value = '';
+};
 
-    const xhr = new XMLHttpRequest();
-    const url = `/api/fs/upload?path=${encodeURIComponent(state.currentPath)}`;
+let uploadQueue = [];
+let uploadState = {
+    total: 0,
+    completed: 0,
+    failed: 0,
+    isUploading: false
+};
+
+// Protect against accidental refresh
+window.addEventListener('beforeunload', (e) => {
+    if (uploadQueue.length > 0 || uploadState.isUploading) {
+        e.preventDefault();
+        e.returnValue = 'Uploads are still in progress. Are you sure you want to leave?';
+    }
+});
+
+function performUpload(files) {
+    // Add files to queue
+    const newFiles = Array.from(files);
+    uploadQueue.push(...newFiles);
+    uploadState.total += newFiles.length;
 
     uploadProgressContainer.classList.remove('hidden');
+    updateUploadProgressUI();
+
+    if (!uploadState.isUploading) {
+        processUploadQueue();
+    }
+}
+
+async function processUploadQueue() {
+    uploadState.isUploading = true;
+    const maxConcurrent = 3; // Upload up to 3 files at once
+
+    while (uploadQueue.length > 0) {
+        // Take a batch of files
+        const batch = uploadQueue.splice(0, maxConcurrent);
+
+        // Upload the batch concurrently
+        await Promise.all(batch.map(file => uploadSingleFile(file)));
+        updateUploadProgressUI();
+    }
+
+    uploadState.isUploading = false;
+    uploadStatus.textContent = uploadState.failed > 0
+        ? `Finished w/ ${uploadState.failed} errors`
+        : 'All uploads complete!';
+
+    setTimeout(() => {
+        if (!uploadState.isUploading) {
+            uploadProgressContainer.classList.add('hidden');
+            uploadState.total = 0;
+            uploadState.completed = 0;
+            uploadState.failed = 0;
+        }
+    }, 4000);
+
+    loadFiles();
+    loadStorageStats();
+}
+
+function updateUploadProgressUI() {
     uploadStatus.textContent = 'Uploading...';
-    uploadCount.textContent = `0/${files.length}`;
-    uploadProgressBar.style.width = '0%';
+    uploadCount.textContent = `${uploadState.completed}/${uploadState.total}`;
+    const percent = Math.round((uploadState.completed / uploadState.total) * 100);
+    uploadProgressBar.style.width = percent + '%';
+}
 
-    xhr.upload.addEventListener('progress', (e) => {
-        if (e.lengthComputable) {
-            const percent = Math.round((e.loaded / e.total) * 100);
-            uploadProgressBar.style.width = percent + '%';
+function uploadSingleFile(file) {
+    return new Promise((resolve) => {
+        const formData = new FormData();
+        formData.append('files', file);
+        // Handle folder structure from webkitRelativePath if available
+        let destPath = state.currentPath;
+        if (file.webkitRelativePath) {
+            const folderStructure = file.webkitRelativePath.substring(0, file.webkitRelativePath.lastIndexOf('/'));
+            if (folderStructure) {
+                destPath = destPath.endsWith('/') ? destPath + folderStructure : `${destPath}/${folderStructure}`;
+            }
         }
+
+        const xhr = new XMLHttpRequest();
+        const url = `/api/fs/upload?path=${encodeURIComponent(destPath)}`;
+
+        xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                uploadState.completed++;
+            } else {
+                uploadState.failed++;
+                showToast(`Failed: ${file.name}`);
+            }
+            resolve();
+        };
+
+        xhr.onerror = () => {
+            uploadState.failed++;
+            showToast(`Error: ${file.name}`);
+            resolve();
+        };
+
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Authorization', `Bearer ${state.token}`);
+        xhr.setRequestHeader('X-Device-Id', state.deviceId);
+        xhr.send(formData);
     });
-
-    xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            uploadStatus.textContent = 'Success!';
-            setTimeout(() => uploadProgressContainer.classList.add('hidden'), 2000);
-            loadFiles();
-            loadStorageStats();
-        } else {
-            uploadStatus.textContent = 'Upload Failed';
-            setTimeout(() => uploadProgressContainer.classList.add('hidden'), 3000);
-            showToast('Upload failed');
-        }
-    };
-
-    xhr.onerror = () => {
-        uploadStatus.textContent = 'Error occurred';
-        setTimeout(() => uploadProgressContainer.classList.add('hidden'), 3000);
-        showToast('Connection error');
-    };
-
-    xhr.open('POST', url);
-    xhr.setRequestHeader('Authorization', `Bearer ${state.token}`);
-    xhr.setRequestHeader('X-Device-Id', state.deviceId);
-    xhr.send(formData);
 }
 
 function previewMedia(name) {
