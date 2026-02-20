@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minas | Premium Cloud Storage</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="ambient-bg">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div id="app">
+        <!-- Auth View -->
+        <div id="auth-container" class="view hidden">
+            <div class="glass-card gate-card">
+                <div class="brand-large">
+                    <i class="ph ph-shield-check-fill"></i>
+                </div>
+                <h1 id="auth-title">Welcome</h1>
+                <p id="auth-subtitle">Protected by Minas</p>
+
+                <form id="auth-form">
+                    <div class="input-group">
+                        <input type="password" id="password" required placeholder="Master Password">
+                    </div>
+
+                    <button type="submit" id="auth-submit" class="btn btn-primary btn-large">
+                        <span>Unlock NAS</span>
+                        <i class="ph ph-lock-key-open"></i>
+                    </button>
+                    <div id="auth-error" class="error-msg"></div>
+                </form>
+            </div>
+        </div>
+
+        <!-- App Shell / Dashboard View -->
+        <div id="dashboard-container" class="view app-shell hidden">
+
+            <!-- Sidebar Navigation -->
+            <aside class="sidebar glass-card">
+                <div class="sidebar-brand">
+                    <i class="ph ph-hard-drives"></i>
+                    <span>Minas</span>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button id="nav-files" class="nav-item active">
+                        <i class="ph ph-folder-open"></i>
+                        <span>Files</span>
+                    </button>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <!-- Storage Insights -->
+                    <div class="storage-widget">
+                        <div class="storage-header">
+                            <span>Storage</span>
+                            <span id="storage-percentage">--%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div id="storage-progress" class="progress-fill"></div>
+                        </div>
+                        <div class="storage-details">
+                            <span id="storage-used">-- GB</span> used of <span id="storage-total">-- GB</span>
+                        </div>
+                    </div>
+
+                    <button id="logout-btn" class="nav-item logout">
+                        <i class="ph ph-sign-out"></i>
+                        <span>Lock Vault</span>
+                    </button>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="main-content">
+
+                <!-- Files Panel -->
+                <div id="panel-files" class="panel active">
+                    <div class="action-bar flex-between"
+                        style="width:100%; display:flex; gap:1rem; align-items:center;">
+                        <div id="breadcrumb" class="breadcrumb" style="flex:1;">
+                            <!-- Breadcrumbs -->
+                        </div>
+
+                        <!-- NEW: View Controls -->
+                        <div class="view-controls">
+                            <div class="control-group">
+                                <label for="view-mode-select">View</label>
+                                <select id="view-mode-select" class="mini-select">
+                                    <option value="list">List</option>
+                                    <option value="grid">Grid</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="sort-select">Sort By</label>
+                                <select id="sort-select" class="mini-select">
+                                    <option value="name">Name</option>
+                                    <option value="size">Size</option>
+                                    <option value="mtime">Modified</option>
+                                    <option value="type">Type</option>
+                                </select>
+                            </div>
+                            <button id="thumb-toggle" class="btn-icon-toggle" title="Toggle Thumbnails">
+                                <i class="ph ph-image"></i>
+                                <span>Thumbnails</span>
+                            </button>
+                        </div>
+
+                        <div id="batch-actions" class="hidden actions" style="margin-right:auto;">
+                            <button id="batch-download-btn" class="btn btn-secondary btn-small">
+                                <i class="ph ph-download-simple"></i>
+                                <span>Download Selected</span>
+                            </button>
+                            <button id="batch-delete-btn" class="btn btn-danger btn-small">
+                                <i class="ph ph-trash"></i>
+                                <span>Delete Selected</span>
+                            </button>
+                        </div>
+                        <div class="actions">
+                            <button id="new-folder-btn" class="btn btn-secondary">
+                                <i class="ph ph-folder-plus"></i>
+                                <span class="hide-mobile">New Folder</span>
+                            </button>
+                            <button id="upload-btn" class="btn btn-primary">
+                                <i class="ph ph-upload-simple"></i>
+                                <span>Upload</span>
+                            </button>
+                            <input type="file" id="file-input" multiple accept="*/*" class="hidden">
+                        </div>
+                    </div>
+
+                    <div id="file-container" class="file-table-container glass-card list-view">
+                        <table class="file-table" id="table-view">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px;"><input type="checkbox" id="select-all-checkbox"></th>
+                                    <th class="sortable" data-sort="name">Name <i
+                                            class="ph ph-caret-up-down sort-icon"></i></th>
+                                    <th class="sortable hide-mobile" data-sort="size">Size <i
+                                            class="ph ph-caret-up-down sort-icon"></i></th>
+                                    <th class="sortable hide-mobile" data-sort="mtime">Modified <i
+                                            class="ph ph-caret-up-down sort-icon"></i></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="file-list">
+                                <!-- Files -->
+                            </tbody>
+                        </table>
+
+                        <div id="grid-view" class="file-grid hidden">
+                            <!-- Grid Items -->
+                        </div>
+
+                        <div id="empty-state" class="hidden">
+                            <i class="ph ph-folder-open"></i>
+                            <p>This folder is empty</p>
+                        </div>
+                    </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Media Preview Lightbox -->
+    <dialog id="media-lightbox" class="lightbox">
+        <div class="lightbox-content">
+            <div class="lightbox-header">
+                <span id="lightbox-title">Preview</span>
+                <button id="lightbox-close" class="btn btn-icon"><i class="ph ph-x"></i></button>
+            </div>
+            <div id="lightbox-media-container"></div>
+        </div>
+    </dialog>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Action Modal (Replaces native prompt/confirm) -->
+    <dialog id="action-modal" class="glass-card modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Action</h3>
+            <p id="modal-message" class="modal-message"></p>
+            <div id="modal-input-container" class="hidden">
+                <input type="text" id="modal-input" class="settings-input" style="width: 100%; margin-top: 1rem;">
+            </div>
+            <div class="modal-actions">
+                <button id="modal-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="modal-confirm" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Upload Progress Overlay -->
+    <div id="upload-progress-container" class="upload-progress-container hidden">
+        <div class="progress-card glass-card">
+            <div class="progress-header">
+                <span id="upload-status">Uploading...</span>
+                <span id="upload-count">0/0</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div id="upload-progress-bar" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

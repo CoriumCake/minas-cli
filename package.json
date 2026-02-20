@@ -1,0 +1,43 @@
+{
+  "name": "@catcode/minas-cli",
+  "version": "1.0.0",
+  "description": "Zero-config NAS exposed via public tunnel",
+  "type": "module",
+  "bin": {
+    "minas-cli": "bin/minas-cli.js"
+  },
+  "scripts": {
+    "start": "node bin/minas-cli.js",
+    "dev": "nodemon bin/minas-cli.js"
+  },
+  "keywords": [
+    "nas",
+    "localtunnel",
+    "storage",
+    "remote-access"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ngrok/ngrok": "^1.7.0",
+    "bcryptjs": "^3.0.3",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "cors": "^2.8.6",
+    "crypto-js": "^4.2.0",
+    "express": "^5.2.1",
+    "express-fileupload": "^1.5.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "localtunnel": "^2.0.2",
+    "ngrok": "^5.0.0-beta.2",
+    "open": "^11.0.0",
+    "public-ip": "^8.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.13"
+  }
+}
