@@ -2,3 +2,9 @@ node_modules/
 .git/
 *.log
 *.md
+.minas-cli.config.json
+pack.json
+pack2.json
+run.txt
+storage/
+temp_*/
