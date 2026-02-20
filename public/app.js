@@ -567,18 +567,22 @@ batchDownloadBtn.onclick = () => {
     });
 };
 
-uploadBtn.onclick = () => fileInput.click();
-fileInput.onchange = () => {
-    if (fileInput.files.length === 0) return;
-    performUpload(fileInput.files);
+uploadBtn.onclick = () => {
     fileInput.value = '';
+    fileInput.click();
+};
+fileInput.onchange = (e) => {
+    if (e.target.files.length === 0) return;
+    performUpload(e.target.files);
 };
 
-uploadFolderBtn.onclick = () => folderInput.click();
-folderInput.onchange = () => {
-    if (folderInput.files.length === 0) return;
-    performUpload(folderInput.files);
+uploadFolderBtn.onclick = () => {
     folderInput.value = '';
+    folderInput.click();
+};
+folderInput.onchange = (e) => {
+    if (e.target.files.length === 0) return;
+    performUpload(e.target.files);
 };
 
 let uploadQueue = [];
@@ -652,7 +656,7 @@ function updateUploadProgressUI() {
 function uploadSingleFile(file) {
     return new Promise((resolve) => {
         const formData = new FormData();
-        formData.append('files', file);
+        formData.append('files', file, file.name);
         // Handle folder structure from webkitRelativePath if available
         let destPath = state.currentPath;
         if (file.webkitRelativePath) {
