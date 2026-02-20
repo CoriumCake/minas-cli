@@ -89,8 +89,10 @@ router.post('/upload', async (req, res) => {
             await file.mv(tempPath);
 
             const hash = await calculateHash(tempPath);
+            const currentConfig = await getConfig();
+            const currentHashes = currentConfig.fileHashes || {};
 
-            if (Object.values(fileHashes).includes(hash)) {
+            if (Object.values(currentHashes).includes(hash)) {
                 await fs.unlink(tempPath);
                 // Return success anyway for batch queue, but log skipped
                 continue;
@@ -104,10 +106,11 @@ router.post('/upload', async (req, res) => {
 
             const uploadPath = path.join(uploadDir, file.name);
             await fs.rename(tempPath, uploadPath);
-            newHashes[uploadPath] = hash;
+
+            // Incrementally append to prevent strict race conditions during bulk uploads
+            await setConfig({ fileHashes: { ...(await getConfig()).fileHashes, [uploadPath]: hash } });
         }
 
-        await setConfig({ fileHashes: newHashes });
         res.json({ success: true });
     } catch (error) {
         res.status(error.message.includes('Access denied') ? 403 : 500).json({ error: error.message });

@@ -33,11 +33,20 @@ export async function hasPassword() {
     return !!(config && config.password);
 }
 
+let configLock = Promise.resolve();
+
 export async function setConfig(newConfig) {
-    const currentConfig = await getConfig();
-    const mergedConfig = { ...currentConfig, ...newConfig };
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(mergedConfig, null, 2));
-    return mergedConfig;
+    const operation = async () => {
+        const currentConfig = await getConfig();
+        const mergedConfig = { ...currentConfig, ...newConfig };
+        // Wait till previous configurations are populated or saved properly to avoid truncation
+        const tempFile = `${CONFIG_FILE}.tmp.${Date.now()}`;
+        await fs.writeFile(tempFile, JSON.stringify(mergedConfig, null, 2));
+        await fs.rename(tempFile, CONFIG_FILE);
+        return mergedConfig;
+    };
+    configLock = configLock.then(operation).catch(operation);
+    return configLock;
 }
 
 export async function getJwtSecret() {
