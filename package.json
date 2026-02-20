@@ -1,6 +1,6 @@
 {
   "name": "minas-cli",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Zero-config NAS exposed via public tunnel",
   "type": "module",
   "publishConfig": {
