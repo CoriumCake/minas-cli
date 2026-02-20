@@ -254,8 +254,8 @@ function renderFiles() {
     }
 
     state.files.forEach(file => {
-        const isMedia = file.name.match(/\.(jpg|jpeg|png|webp|mp4|webm|gif)$/i);
-        const isImage = file.name.match(/\.(jpg|jpeg|png|webp|gif)$/i);
+        const isMedia = file.name.match(/\.(jpg|jpeg|png|webp|mp4|webm|gif|heic|heif)$/i);
+        const isImage = file.name.match(/\.(jpg|jpeg|png|webp|gif|heic|heif)$/i);
         const thumbUrl = `/api/fs/preview?path=${encodeURIComponent(state.currentPath.endsWith('/') ? state.currentPath + file.name : `${state.currentPath}/${file.name}`)}&token=${state.token}&X-Device-Id=${state.deviceId}`;
 
         if (state.viewMode === 'list') {

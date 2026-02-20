@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import { validatePath, listDirectory, deleteItem, createFolder, calculateHash, getStorageStats } from '../fs_utils.js';
 import { requireAuth } from '../auth.js';
 import { setConfig, getConfig } from '../config.js';
+import convert from 'heic-convert';
 
 const router = express.Router();
 
@@ -50,6 +51,19 @@ router.get('/preview', async (req, res) => {
         if (!requestedPath) return res.status(400).json({ error: 'Path required' });
 
         const safePath = await validatePath(requestedPath);
+        const lowerPath = safePath.toLowerCase();
+
+        if (lowerPath.endsWith('.heic') || lowerPath.endsWith('.heif')) {
+            const buffer = await fs.readFile(safePath);
+            const jpegBuffer = await convert({
+                buffer: buffer,
+                format: 'JPEG',
+                quality: 0.5
+            });
+            res.setHeader('Content-Type', 'image/jpeg');
+            return res.send(Buffer.from(jpegBuffer));
+        }
+
         res.sendFile(safePath);
     } catch (error) {
         res.status(error.message.includes('Access denied') ? 403 : 500).json({ error: error.message });
